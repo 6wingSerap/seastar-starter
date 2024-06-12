@@ -1,38 +1,158 @@
-BasedOnStyle: Mozilla
-Language: Cpp
-AccessModifierOffset: -4
-AlignAfterOpenBracket: AlwaysBreak
-AllowAllParametersOfDeclarationOnNextLine: true
-AllowShortBlocksOnASingleLine: false
-AllowShortCaseLabelsOnASingleLine: false
-AllowShortFunctionsOnASingleLine: false
-AllowShortIfStatementsOnASingleLine: false
-AllowShortLoopsOnASingleLine: false
+# Checkout config tool: https://zed0.co.uk/clang-format-configurator/
+# Or http://cf.monofraps.net/
+# https://clang.llvm.org/docs/ClangFormatStyleOptions.html
+# https://github.com/01org/parameter-framework/blob/master/.clang-format
+
+# Tested on: clang-format version 6.0.1
+
+
+
+
+---
+
+BraceWrapping: {
+    AfterClass: 'true'
+    AfterControlStatement: 'true'
+    AfterEnum : 'true'
+    AfterFunction : 'true'
+    AfterNamespace : 'true'
+    AfterStruct : 'true'
+    AfterUnion : 'true'
+    BeforeCatch : 'true'
+    BeforeElse : 'true'
+    IndentBraces : 'false'
+    AfterExternBlock : 'true'
+    SplitEmptyFunction : 'false'
+    SplitEmptyRecord : 'false'
+    SplitEmptyNamespace : 'true'
+    BeforeLambdaBody: 'true',
+}
+
+LambdaBodyIndentation: OuterScope
+BasedOnStyle: Microsoft
+AccessModifierOffset: '0'
+AlignAfterOpenBracket: Align
+AlignConsecutiveAssignments: 'false'
+AlignConsecutiveDeclarations: 'false'
+AlignOperands: 'true'
+AlignTrailingComments: 'false'
+AllowAllArgumentsOnNextLine: 'false'
+AllowAllParametersOfDeclarationOnNextLine: 'true'
+AllowShortBlocksOnASingleLine: 'true'
+AllowShortCaseLabelsOnASingleLine: 'false'
+AllowShortFunctionsOnASingleLine: Empty
+AllowShortIfStatementsOnASingleLine: WithoutElse
+AllowShortLoopsOnASingleLine: 'false'
 AlwaysBreakAfterDefinitionReturnType: None
 AlwaysBreakAfterReturnType: None
-BreakBeforeBinaryOperators: All
-BreakBeforeBraces: Attach
-ColumnLimit: 80
-ContinuationIndentWidth: 2
-Cpp11BracedListStyle: true
-FixNamespaceComments: true
-IncludeBlocks: Regroup
-IncludeCategories:
-  # Seastar files (with angles)
-  - Regex:    '^<seastar/'
-    Priority: 2
-  # Other libraries
-  - Regex:    '^<.+/'
-    Priority: 4
-  # Std header files (with angles)
-  - Regex:    '^<'
-    Priority: 5
-  # Internal headers (with quotes)
-  - Regex:    '.h'
-    Priority: 1
-IndentCaseLabels: false
-IndentWidth: 4
-KeepEmptyLinesAtTheStartOfBlocks: false
-PenaltyBreakAssignment: 100
-PenaltyBreakBeforeFirstCallParameter: 10
-PenaltyReturnTypeOnItsOwnLine: 60
+AlwaysBreakBeforeMultilineStrings: 'false'
+AlwaysBreakTemplateDeclarations: 'Yes'
+BinPackArguments: 'false'
+BinPackParameters: 'false'
+BreakAfterJavaFieldAnnotations: 'true'
+BreakBeforeBinaryOperators: None
+BreakBeforeBraces: Custom
+BreakBeforeTernaryOperators: 'true'
+BreakStringLiterals: 'true'
+ColumnLimit: '0'
+CommentPragmas: '^ IWYU pragma:'
+CompactNamespaces: 'false'
+ConstructorInitializerAllOnOneLineOrOnePerLine: 'false'
+ConstructorInitializerIndentWidth: '4'
+ContinuationIndentWidth: '4'
+Cpp11BracedListStyle: 'true'
+DerivePointerAlignment: 'false'
+FixNamespaceComments: 'true'
+IncludeBlocks: Preserve
+IndentCaseLabels: 'false'
+IndentPPDirectives: AfterHash
+IndentWidth: '4'
+IndentWrappedFunctionNames: 'false'
+JavaScriptQuotes: Double
+KeepEmptyLinesAtTheStartOfBlocks: 'true'
+Language: Cpp
+MaxEmptyLinesToKeep: '1'
+NamespaceIndentation: None
+PenaltyBreakBeforeFirstCallParameter: '19'
+PenaltyBreakComment: '300'
+PenaltyBreakFirstLessLess: '120'
+PenaltyBreakString: '1000'
+PenaltyExcessCharacter: '1000000'
+PenaltyReturnTypeOnItsOwnLine: '60'
+PointerAlignment: Left
+ReflowComments: 'false'
+SortIncludes: 'true'
+SortUsingDeclarations: 'true'
+SpaceAfterCStyleCast: 'false'
+SpaceAfterTemplateKeyword: 'true'
+SpaceBeforeAssignmentOperators: 'true'
+SpaceBeforeCpp11BracedList: 'true'
+SpaceBeforeCtorInitializerColon: 'true'
+SpaceBeforeInheritanceColon: 'true'
+SpaceBeforeParens: ControlStatements
+SpaceBeforeRangeBasedForLoopColon: 'true'
+SpacesBeforeTrailingComments: '1'
+SpacesInAngles: 'false'
+SpacesInCStyleCastParentheses: 'false'
+SpacesInContainerLiterals: 'true'
+SpacesInParentheses: 'false'
+SpacesInSquareBrackets: 'false'
+Standard: c++20
+TabWidth: '4'
+UseTab: Never
+---
+
+# BasedOnStyle: Google
+# Language: Cpp
+# AccessModifierOffset: 0
+# AlignAfterOpenBracket: Align
+# AllowAllParametersOfDeclarationOnNextLine: true
+# AllowShortBlocksOnASingleLine: false
+# AllowShortCaseLabelsOnASingleLine: false
+# AllowShortFunctionsOnASingleLine: None
+# AllowShortIfStatementsOnASingleLine: false
+# AllowShortLoopsOnASingleLine: false
+# AlwaysBreakAfterDefinitionReturnType: None
+# AlwaysBreakAfterReturnType: None
+# BreakBeforeBinaryOperators: None
+# BreakBeforeBraces: Allman
+# ColumnLimit: 300
+# ContinuationIndentWidth: 4
+# Cpp11BracedListStyle: true
+# FixNamespaceComments: false
+# IncludeBlocks: Regroup
+# IncludeCategories:
+#   # Seastar files (with angles)
+#   - Regex:    '^<seastar/'
+#     Priority: 2
+#   # Other libraries
+#   - Regex:    '^<.+/'
+#     Priority: 4
+#   # Std header files (with angles)
+#   - Regex:    '^<'
+#     Priority: 5
+#   # Internal headers (with quotes)
+#   - Regex:    '.h'
+#     Priority: 1
+# IndentCaseLabels: false
+# IndentWidth: 4
+# KeepEmptyLinesAtTheStartOfBlocks: false
+# NamespaceIndentation: All
+# PenaltyBreakAssignment: 100
+# PenaltyBreakBeforeFirstCallParameter: 300
+# PenaltyReturnTypeOnItsOwnLine: 60
+# SpaceBeforeAssignmentOperators: true
+# SpaceBeforeCpp11BracedList: true
+# SpaceBeforeCtorInitializerColon: true
+# SpaceBeforeInheritanceColon: true
+# SpaceBeforeParens: ControlStatements
+# SpaceBeforeRangeBasedForLoopColon: true
+# SpaceInEmptyParentheses: false
+# SpacesBeforeTrailingComments: 1
+# SpacesInAngles: false
+# SpacesInCStyleCastParentheses: false
+# SpacesInContainerLiterals: true
+# SpacesInParentheses: false
+# SpacesInSquareBrackets: false
+# TabWidth: 4
+# UseTab: Never
