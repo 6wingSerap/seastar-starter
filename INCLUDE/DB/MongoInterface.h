@@ -6,7 +6,12 @@
 #include <seastar/core/sstring.hh>
 #include <seastar/core/shared_ptr.hh>
 
+#include "bsoncxx/document/value.hpp"
+#include "bsoncxx/document/view_or_value.hpp"
+#include "bsoncxx/json.hpp"
 #include "mongocxx/database-fwd.hpp"
+#include "mongocxx/options/find-fwd.hpp"
+#include "mongocxx/options/update-fwd.hpp"
 #include <mongocxx/instance.hpp>
 
 // using _json = bsoncxx::document::view_or_value
@@ -16,38 +21,38 @@ class MongoDBInterface
     public:
     static seastar::future<> createDB(const string_view db_name)
     {
-        TRY;
+        // TRY;
 
         mongocxx::database db = (co_await db_clients())[db_name];
         db.create_collection("DummyCollection"sv);
 
-        CATCH{ LG_ERROR("Failed to create database: {} exception: {}", db_name, std::current_exception()); }
+        // CATCH{ LG_ERROR("Failed to create database: {} exception: {}", db_name, std::current_exception()); }
     }
 
     static seastar::future<> createCollection(const string_view db_name, const string_view coll_name, const document::view_or_value& options = {})
     {
-        TRY;
+        // TRY;
 
         mongocxx::database db = (co_await db_clients())[db_name];
         db.create_collection(coll_name, options);
 
-        CATCH{ LG_ERROR("Failed to create collection: {} exception: {}", coll_name, std::current_exception()); }
+        // CATCH{ LG_ERROR("Failed to create collection: {} exception: {}", coll_name, std::current_exception()); }
     }
 
     static seastar::future<> createDocument(const string_view db_name, const string_view coll_name, const document::view_or_value& document = {})
     {
-        TRY;
+        // TRY;
 
         mongocxx::database db = (co_await db_clients())[db_name];
         mongocxx::collection coll = db[coll_name];
         coll.insert_one(document);
 
-        CATCH{ LG_ERROR("Failed to create document: {} exception: {}", coll_name, std::current_exception()); }
+        // CATCH{ LG_ERROR("Failed to create document: {} exception: {}", coll_name, std::current_exception()); }
     }
 
     static seastar::future<seastar::lw_shared_ptr<document::view_or_value>> readDB(const string_view dbName, const bool list_all)
     {
-        TRY;
+        // TRY;
 
         auto listeddbs = (co_await db_clients()).list_databases();
 
@@ -86,13 +91,13 @@ class MongoDBInterface
 
         co_return seastar::make_lw_shared<document::view_or_value>(document_builder.extract());
 
-        CATCH{ LG_ERROR("Failed to read database: {} exception: {}", dbName, std::current_exception()); }
+        // CATCH{ LG_ERROR("Failed to read database: {} exception: {}", dbName, std::current_exception()); }
         co_return nullptr;
     }
 
     static seastar::future<seastar::lw_shared_ptr<document::view_or_value>> readCollection(const string_view dbName, const string_view collectionName, const bool listAll)
     {
-        TRY;
+        // TRY;
 
         auto db = (co_await db_clients())[dbName];
         auto listedCollections = db.list_collections();
@@ -106,9 +111,9 @@ class MongoDBInterface
                 bsoncxx::builder::basic::document docBuilder;
                 docBuilder.append(kvp("name", collection["name"].get_value()));
                 docBuilder.append(kvp("type", collection["type"].get_value()));
-                docBuilder.append(kvp("options", collection["options"].get_value()));
-                docBuilder.append(kvp("info", collection["info"].get_value()));
-                docBuilder.append(kvp("idIndex", collection["idIndex"].get_value()));
+                // docBuilder.append(kvp("options", collection["options"].get_value()));
+                // docBuilder.append(kvp("info", collection["info"].get_value()));
+                // docBuilder.append(kvp("idIndex", collection["idIndex"].get_value()));
                 arrayBuilder.append(docBuilder.extract());
             }
         }
@@ -122,9 +127,9 @@ class MongoDBInterface
                     bsoncxx::builder::basic::document docBuilder;
                     docBuilder.append(kvp("name", collection["name"].get_value()));
                     docBuilder.append(kvp("type", collection["type"].get_value()));
-                    docBuilder.append(kvp("options", collection["options"].get_value()));
-                    docBuilder.append(kvp("info", collection["info"].get_value()));
-                    docBuilder.append(kvp("idIndex", collection["idIndex"].get_value()));
+                    // docBuilder.append(kvp("options", collection["options"].get_value()));
+                    // docBuilder.append(kvp("info", collection["info"].get_value()));
+                    // docBuilder.append(kvp("idIndex", collection["idIndex"].get_value()));
                     arrayBuilder.append(docBuilder.extract());
                     found = true;
                     break;
@@ -142,13 +147,13 @@ class MongoDBInterface
 
         co_return seastar::make_lw_shared<document::view_or_value>(documentBuilder.extract());
 
-        CATCH{ LG_ERROR("Failed to read collection: {} exception: {}", collectionName, std::current_exception()); }
+        // CATCH{ LG_ERROR("Failed to read collection: {} exception: {}", collectionName, std::current_exception()); }
         co_return nullptr;
     }
 
     static seastar::future<seastar::lw_shared_ptr<document::view_or_value>> readDocument(const string_view dbName, const string_view collectionName, const document::view_or_value& filter = {}, const document::view_or_value& options = {})
     {
-        TRY;
+        // TRY;
 
         auto db = (co_await db_clients())[dbName];
         auto collection = db[collectionName];
@@ -159,15 +164,19 @@ class MongoDBInterface
         if (options.view()["batch_size"]) { opts.batch_size(options.view()["batch_size"].get_int32().value); }
 
         if (options.view()["limit"]) { opts.limit(options.view()["limit"].get_int32().value); }
-        // opts.hint()
-        // TODO: больше настроек
+        // opts.projection(options.view()["projection"].get_document().value);
+        if (options.view()["skip"]) { opts.skip(options.view()["skip"].get_int32().value); }
 
-        auto doc_cursor = collection.find(filter, opts);
+        if (options.view()["sort"]) { opts.sort(options.view()["sort"].get_document().value); }
+
+        if (options.view()["projection"]) { opts.projection(options.view()["projection"].get_document().value); }
+
+        cursor doc_cursor = collection.find(filter, opts);
 
         bsoncxx::builder::basic::array arrayBuilder;
         for (auto&& doc : doc_cursor)
         {
-            arrayBuilder.append(doc);
+            arrayBuilder.append(/* bsoncxx::to_json */(doc));
         }
 
         bsoncxx::builder::basic::document documentBuilder;
@@ -175,64 +184,70 @@ class MongoDBInterface
 
         co_return seastar::make_lw_shared<document::view_or_value>(documentBuilder.extract());
 
-        CATCH{ LG_ERROR("Failed to read document: {} exception: {}", collectionName, std::current_exception()); }
+        // CATCH{ LG_ERROR("Failed to read document: {} exception: {}", collectionName, std::current_exception()); }
         co_return nullptr;
     }
 
     static seastar::future<> updateCollection(const string_view dbName, const string_view oldName, const string_view newName)
     {
-        TRY;
+        // TRY;
 
         auto& client = co_await db_clients();
         auto db = (co_await db_clients())[dbName];
         db[oldName].rename(newName);
 
-        CATCH{ LG_ERROR("Failed to update collection: {} exception: {}", oldName, std::current_exception()); }
+        // CATCH{ LG_ERROR("Failed to update collection: {} exception: {}", oldName, std::current_exception()); }
     }
 
     static seastar::future<> updateDocument(const string_view dbName, const string_view collectionName, bool updmany = false, const document::view_or_value& filter = {}, const document::view_or_value& update = {})
     {
-        TRY;
+        // TRY;
 
         auto db = (co_await db_clients())[dbName];
         auto collection = db[collectionName];
+        // mongocxx::options::update opts{};
 
-        if (!filter.view().empty() && !update.view().empty())
+        // LG.debug("Filter: {}", bsoncxx::to_json(filter));
+        // LG.debug("Update: {}", bsoncxx::to_json(update));
+
+        if (/* !filter.view().empty() && */ !update.view().empty())
         {
             if (updmany)
             {
+                // LG.debug("Updating many documents");
                 collection.update_many(filter, update);
             }
             else
             {
+                // LG.debug("Updating one document");
                 collection.update_one(filter, update);
             }
         }
 
-        CATCH{ LG_ERROR("Failed to update document: {} exception: {}", collectionName, std::current_exception()); }
+        // CATCH{ LG_ERROR("Failed to update document: {} exception: {}", collectionName, std::current_exception()); }
     }
 
     static seastar::future<> deleteDB(const string_view dbName)
     {
-        TRY;
+        // TRY;
 
         (co_await db_clients())[dbName].drop();
 
-        CATCH{ LG_ERROR("Failed to delete database: {} exception: {}", dbName, std::current_exception()); }
+        // CATCH{ LG_ERROR("Failed to delete database: {} exception: {}", dbName, std::current_exception()); }
     }
 
     static seastar::future<> deleteCollection(const string_view dbName, const string_view collectionName)
     {
-        TRY;
+        // TRY;
 
         (co_await db_clients())[dbName][collectionName].drop();
 
-        CATCH{ LG_ERROR("Failed to delete collection: {} exception: {}", collectionName, std::current_exception()); }
+        // CATCH{ LG_ERROR("Failed to delete collection: {} exception: {}", collectionName, std::current_exception()); }
     }
 
     static seastar::future<> deleteDocument(const string_view dbName, const string_view collectionName, bool delmany = false, const document::view_or_value& filter = {})
     {
-        TRY;
+        // TRY;
 
         auto db = (co_await db_clients())[dbName];
         auto collection = db[collectionName];
@@ -249,12 +264,12 @@ class MongoDBInterface
             }
         }
 
-        CATCH{ LG_ERROR("Failed to delete document: {} exception: {}", collectionName, std::current_exception()); }
+        // CATCH{ LG_ERROR("Failed to delete document: {} exception: {}", collectionName, std::current_exception()); }
     }
 
     static seastar::future<> createIndex(const string_view dbName, const string_view collectionName, const document::view_or_value& keys, const document::view_or_value& index_options = {})
     {
-        TRY;
+        // TRY;
 
         auto db = (co_await db_clients())[dbName];
         auto collection = db[collectionName];
@@ -264,12 +279,12 @@ class MongoDBInterface
             collection.create_index(keys, index_options);
         }
 
-        CATCH{ LG_ERROR("Failed to create index: {} exception: {}", collectionName, std::current_exception()); }
+        // CATCH{ LG_ERROR("Failed to create index: {} exception: {}", collectionName, std::current_exception()); }
     }
 
     static seastar::future<seastar::lw_shared_ptr<document::view_or_value>> readIndex(const string_view dbName, const string_view collectionName, const string_view indexName = "")
     {
-        TRY;
+        // TRY;
 
         auto db = (co_await db_clients())[dbName];
         auto collection = db[collectionName];
@@ -281,6 +296,7 @@ class MongoDBInterface
         {
             for (auto&& index : indexes_cursor)
             {
+                LG.info("Index json: {}", bsoncxx::to_json(index));
                 arrayBuilder.append(index);
             }
         }
@@ -290,6 +306,7 @@ class MongoDBInterface
             {
                 if (indexName == index["name"].get_string().value)
                 {
+                    LG.info("Index json: {}", bsoncxx::to_json(index));
                     arrayBuilder.append(index);
                     break;
                 }
@@ -301,19 +318,19 @@ class MongoDBInterface
 
         co_return seastar::make_lw_shared<document::view_or_value>(documentBuilder.extract());
 
-        CATCH{ LG_ERROR("Failed to read index: {} exception: {}", collectionName, std::current_exception()); }
+        // CATCH{ LG_ERROR("Failed to read index: {} exception: {}", collectionName, std::current_exception()); }
         co_return nullptr;
     }
 
     static seastar::future<> deleteIndex(const string_view dbName, const string_view collectionName, const string_view indexName)
     {
-        TRY;
+        // TRY;
 
         auto db = (co_await db_clients())[dbName];
         auto collection = db[collectionName];
 
         collection.indexes().drop_one(indexName);
 
-        CATCH{ LG_ERROR("Failed to delete index: {} exception: {}", collectionName, std::current_exception()); }
+        // CATCH{ LG_ERROR("Failed to delete index: {} exception: {}", collectionName, std::current_exception()); }
     }
 };

@@ -1,10 +1,12 @@
 #pragma once
 
 #include <chrono>
+#include <exception>
 #include <iostream>
 #include <utility>
 
 #include "GLOBALS.h"
+#include "seastar/core/future.hh"
 
 using namespace std;
 using namespace chrono;
@@ -16,7 +18,29 @@ using namespace literals;
 // Макрос для блока catch, который возвращает future с исключением
 #define SEASTAR_CATCH } catch (...) { co_return co_await seastar::make_exception_future<>(std::current_exception()); }
 #define CATCH } catch (...)
-// #define SEASTAR_CATCH } catch (...) { return seastar::make_exception_future<>(std::current_exception()); }
+
+// Перегрузка для функций, возвращающих void
+template <typename Func>
+std::enable_if_t<std::is_void_v<std::invoke_result_t<Func>>, seastar::future<>>
+make_ready_future_wrapper(Func&& func)
+{
+    TRY
+        func();
+    CATCH
+    { return seastar::make_exception_future<std::invoke_result_t<Func>>(std::current_exception()); }
+}
+
+// Перегрузка для функций, возвращающих значение
+template <typename Func>
+std::enable_if_t<!std::is_void_v<std::invoke_result_t<Func>>, seastar::future<std::invoke_result_t<Func>>>
+make_ready_future_wrapper(Func&& func)
+{
+    return seastar::make_ready_future<std::invoke_result_t<Func>>(func());
+}
+
+// Макрос для создания seastar::future из любых функций
+#define FUT_LE(...) \
+    make_ready_future_wrapper([&] { return __VA_ARGS__; })
 
 #define LG_ERROR(msg, ...) LG.error("[{}-{}] | " msg, __LINE__, __FILE_NAME__, ##__VA_ARGS__)
 #define LG_WARN(msg, ...) LG.warn("[{}-{}] | " msg, __LINE__, __FILE_NAME__, ##__VA_ARGS__)
@@ -52,7 +76,7 @@ class LogDuration
         }
         else if (ms < 1000000)
         {
-            os << std::fixed << std::setprecision(2) << ms / 1000.0 << " ms";
+            os << /*asd*/ std::fixed << std::setprecision(2) << ms / 1000.0 << " ms";
         }
         else
         {
