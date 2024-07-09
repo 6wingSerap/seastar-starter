@@ -7,6 +7,12 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+
+# add define NEXUS_DEBUG if build type is Debug
+if(CMAKE_BUILD_TYPE MATCHES Debug)
+    add_definitions(-DNEXUS_DEBUG)
+endif()
+
 find_package(Python3 COMPONENTS Interpreter REQUIRED)
 
 find_path(BSONCXX_INCLUDE_DIR bsoncxx/json.hpp PATHS /usr/local/include/bsoncxx/v_noabi)
